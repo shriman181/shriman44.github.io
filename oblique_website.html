@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oblique — AI Platform for Print & Packaging</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   OBLIQUE — VARIABLES & RESET
+============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:    #09080C;
+  --ink2:   #131118;
+  --ink3:   #1C1A24;
+  --ink4:   #2A2835;
+  --paper:  #F3EDE3;
+  --paper2: #E5DDD2;
+  --C:      #00C3F0;
+  --M:      #FF0055;
+  --Y:      #FFD200;
+  --green:  #00F09A;
+  --white:  #FFFFFF;
+  --gray:   rgba(255,255,255,0.45);
+  --dim:    rgba(255,255,255,0.12);
+  --fdisp:  'Barlow Condensed', Impact, sans-serif;
+  --fbody:  'Instrument Sans', system-ui, sans-serif;
+  --max:    1160px;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--fbody); background: var(--ink); color: var(--white); overflow-x: hidden; }
+a { text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+img { display: block; max-width: 100%; }
+
+/* ============================================================
+   CMYK TOP BAR (fixed accent)
+============================================================ */
+.cmyk-top {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 4px; display: flex; z-index: 1001;
+}
+.cmyk-top span { flex: 1; }
+.cmyk-top .cc { background: var(--C); }
+.cmyk-top .cm { background: var(--M); }
+.cmyk-top .cy { background: var(--Y); }
+.cmyk-top .ck { background: rgba(255,255,255,0.35); }
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+nav {
+  position: fixed; top: 4px; left: 0; right: 0;
+  height: 60px; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 2.5rem;
+  background: rgba(9,8,12,0.88); backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,0.05); z-index: 1000;
+  transition: background 0.3s;
+}
+
+.nav-logo { display: flex; align-items: center; gap: 10px; }
+.nav-reg-mark {
+  width: 22px; height: 22px; flex-shrink: 0;
+  position: relative; display: flex; align-items: center; justify-content: center;
+}
+.nav-reg-mark svg { width: 22px; height: 22px; }
+.nav-wordmark {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  font-size: 20px; letter-spacing: 3px; text-transform: uppercase; color: var(--white);
+}
+.nav-wordmark em { color: var(--M); font-style: normal; }
+
+.nav-links { display: flex; gap: 2.5rem; list-style: none; }
+.nav-links a {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--gray); transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--M); }
+
+.nav-cta {
+  background: var(--M); color: var(--white);
+  padding: 8px 22px; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  border: none; border-radius: 1px; transition: background 0.2s, transform 0.15s;
+}
+.nav-cta:hover { background: #d40048; transform: translateY(-1px); }
+
+/* ============================================================
+   SHARED UTILITIES
+============================================================ */
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 2rem; }
+
+.label-line {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;
+}
+.label-line::before { content: ''; width: 28px; height: 2px; background: var(--M); flex-shrink: 0; }
+.label-line span {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--M);
+}
+.label-line.cy::before { background: var(--C); }
+.label-line.cy span { color: var(--C); }
+.label-line.yy::before { background: var(--Y); }
+.label-line.yy span { color: var(--Y); }
+.label-line.gg::before { background: var(--green); }
+.label-line.gg span { color: var(--green); }
+
+.disp {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  line-height: 0.92; text-transform: uppercase;
+}
+
+.sect-title {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  font-size: clamp(38px, 5vw, 64px); line-height: 0.92;
+  text-transform: uppercase; margin-bottom: 1rem;
+}
+
+.sect-sub {
+  font-size: 15px; font-weight: 300; line-height: 1.75;
+  color: var(--gray); max-width: 500px; margin-bottom: 2.5rem;
+}
+
+/* Halftone pattern mixin */
+.halftone::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+/* Diagonal dividers */
+.diag-down {
+  height: 64px; background: var(--paper);
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+  margin-top: -1px; position: relative; z-index: 4;
+}
+.diag-up {
+  height: 64px; background: var(--paper);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  margin-bottom: -1px; position: relative; z-index: 4;
+}
+.diag-dark-down {
+  height: 64px; background: var(--ink2);
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+  margin-top: -1px; position: relative; z-index: 4;
+}
+.diag-dark-up {
+  height: 64px; background: var(--ink2);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  margin-bottom: -1px; position: relative; z-index: 4;
+}
+
+/* Fade-up scroll animation */
+.fu { opacity: 0; transform: translateY(28px); transition: opacity 0.65s ease, transform 0.65s ease; }
+.fu.in { opacity: 1; transform: none; }
+.fu.d1 { transition-delay: 0.1s; }
+.fu.d2 { transition-delay: 0.2s; }
+.fu.d3 { transition-delay: 0.3s; }
+.fu.d4 { transition-delay: 0.4s; }
+
+/* ============================================================
+   HERO
+============================================================ */
+.hero {
+  min-height: 100vh; padding-top: 64px;
+  background: var(--ink); position: relative; overflow: hidden;
+  display: flex; align-items: center;
+}
+.hero::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.032) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Oblique diagonal stripe in background */
+.hero::before {
+  content: ''; position: absolute;
+  top: -20%; left: 55%; width: 60%; height: 160%;
+  background: rgba(255,0,85,0.025);
+  transform: skewX(-8deg);
+  pointer-events: none;
+}
+
+.hero-inner {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3rem; align-items: center;
+  padding: 4rem 0; position: relative; z-index: 2;
+}
+
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;
+}
+.hero-eyebrow::before { content: ''; width: 28px; height: 2px; background: var(--M); }
+.hero-eyebrow span {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--M);
+}
+
+.hero-h1 {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  font-size: clamp(60px, 8vw, 100px); line-height: 0.9;
+  text-transform: uppercase; margin-bottom: 1.75rem;
+}
+.hero-h1 .l1 { display: block; color: var(--white); }
+.hero-h1 .l2 { display: block; color: var(--M); }
+.hero-h1 .l3 {
+  display: block;
+  -webkit-text-stroke: 1.5px rgba(255,255,255,0.3);
+  color: transparent;
+}
+
+.hero-p {
+  font-size: 15px; font-weight: 300; color: var(--gray);
+  line-height: 1.8; max-width: 420px; margin-bottom: 2.5rem;
+}
+.hero-p strong { color: var(--white); font-weight: 500; }
+
+.hero-btns { display: flex; gap: 12px; align-items: center; }
+.btn-mag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--M); color: var(--white);
+  padding: 14px 28px; border: none; border-radius: 1px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; transition: background 0.2s, transform 0.15s;
+}
+.btn-mag:hover { background: #d40048; transform: translateY(-2px); }
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid rgba(255,255,255,0.2); color: var(--gray);
+  padding: 14px 28px; border-radius: 1px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; transition: border-color 0.2s, color 0.2s;
+}
+.btn-outline:hover { border-color: var(--C); color: var(--C); }
+
+.hero-stats {
+  display: flex; gap: 2.5rem; margin-top: 3rem;
+  padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.07);
+}
+.hst-n {
+  font-family: var(--fdisp); font-weight: 900; font-size: 30px;
+  color: var(--white); line-height: 1;
+}
+.hst-n sub { font-size: 14px; color: var(--gray); vertical-align: baseline; }
+.hst-l { font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: 0.06em; margin-top: 4px; }
+
+/* === CMYK REGISTRATION ANIMATION === */
+.hero-visual {
+  position: relative; display: flex; align-items: center;
+  justify-content: center; min-height: 460px;
+}
+
+.reg-wrap { position: relative; width: 300px; height: 300px; flex-shrink: 0; }
+
+.rc {
+  position: absolute; width: 150px; height: 150px;
+  border-radius: 50%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+}
+.rc.cyan    { background: var(--C); opacity: 0.9; animation: regC 5s ease-in-out infinite; }
+.rc.mag     { background: var(--M); opacity: 0.9; animation: regM 5s ease-in-out infinite; }
+.rc.yel     { background: var(--Y); opacity: 0.9; animation: regY 5s ease-in-out infinite; }
+.rc.key     { background: rgba(240,240,255,0.6); opacity: 0.7; animation: regK 5s ease-in-out infinite; }
+
+@keyframes regC {
+  0%,100% { transform: translate(calc(-50% - 48px), calc(-50% - 48px)); }
+  45%,55% { transform: translate(-50%, -50%); }
+}
+@keyframes regM {
+  0%,100% { transform: translate(calc(-50% + 48px), calc(-50% - 48px)); }
+  45%,55% { transform: translate(-50%, -50%); }
+}
+@keyframes regY {
+  0%,100% { transform: translate(calc(-50% - 48px), calc(-50% + 48px)); }
+  45%,55% { transform: translate(-50%, -50%); }
+}
+@keyframes regK {
+  0%,100% { transform: translate(calc(-50% + 48px), calc(-50% + 48px)); opacity: 0.4; }
+  45%,55% { transform: translate(-50%, -50%); opacity: 0.7; }
+}
+
+.reg-cross {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%); width: 220px; height: 220px;
+  pointer-events: none;
+}
+.reg-cross::before, .reg-cross::after {
+  content: ''; position: absolute; background: rgba(255,255,255,0.18);
+}
+.reg-cross::before { width: 1px; height: 100%; left: 50%; }
+.reg-cross::after  { height: 1px; width: 100%; top: 50%; }
+
+/* Outer registration circle */
+.reg-outer {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 280px; height: 280px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%; pointer-events: none;
+}
+
+.reg-letters { position: absolute; inset: 0; }
+.rlet {
+  position: absolute; font-family: var(--fdisp);
+  font-weight: 800; font-size: 11px; letter-spacing: 3px;
+}
+.rlet.C { color: var(--C); top: 8px; left: 16px; }
+.rlet.M { color: var(--M); top: 8px; right: 16px; }
+.rlet.Y { color: var(--Y); bottom: 8px; left: 16px; }
+.rlet.K { color: rgba(255,255,255,0.4); bottom: 8px; right: 16px; }
+
+/* Floating chip cards around visual */
+.fchip {
+  position: absolute;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px); border-radius: 3px;
+  padding: 10px 14px;
+}
+.fchip .fn {
+  font-family: var(--fdisp); font-weight: 900; font-size: 22px; line-height: 1;
+}
+.fchip .fl {
+  font-size: 9px; color: rgba(255,255,255,0.4);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-top: 3px;
+}
+.fchip.fc1 { top: 16px; left: -10px; animation: chipFloat 4s ease-in-out infinite; }
+.fchip.fc2 { bottom: 30px; right: -20px; animation: chipFloat 4s ease-in-out infinite 1.2s; }
+.fchip.fc3 { top: 46%; right: -24px; animation: chipFloat 4s ease-in-out infinite 2.4s; }
+
+@keyframes chipFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* ============================================================
+   MARQUEE STRIP
+============================================================ */
+.marquee-strip {
+  background: var(--M); overflow: hidden;
+  padding: 14px 0; position: relative; z-index: 5;
+}
+.marquee-track {
+  display: flex; gap: 0;
+  animation: marquee 28s linear infinite; width: max-content;
+}
+.marquee-track span {
+  font-family: var(--fdisp); font-weight: 800; font-style: italic;
+  font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(255,255,255,0.9); white-space: nowrap; padding: 0 18px;
+}
+.marquee-track span.sep { color: rgba(255,255,255,0.4); }
+
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ============================================================
+   PROBLEM SECTION
+============================================================ */
+.problem {
+  background: var(--paper); color: var(--ink);
+  padding: 5rem 0 4rem; position: relative; overflow: hidden;
+}
+.problem::after {
+  content: ''; position: absolute; inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.045) 1px, transparent 0);
+  background-size: 20px 20px; pointer-events: none;
+}
+
+.problem .label-line::before { background: var(--M); }
+.problem .label-line span { color: var(--M); }
+.problem .sect-title { color: var(--ink); }
+.problem .sect-sub { color: rgba(0,0,0,0.5); }
+
+.leaks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; position: relative; z-index: 2; }
+
+.leak {
+  background: var(--ink); padding: 2rem 1.5rem;
+  position: relative; overflow: hidden;
+  transition: transform 0.3s ease;
+}
+.leak:hover { transform: translateY(-5px); }
+
+.leak-num {
+  font-family: var(--fdisp); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.2em; opacity: 0.3; margin-bottom: 1rem; display: block;
+}
+.leak-fig {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  font-size: 46px; line-height: 1; margin-bottom: 0.6rem;
+}
+.leak:nth-child(1) .leak-fig { color: var(--C); }
+.leak:nth-child(2) .leak-fig { color: var(--M); }
+.leak:nth-child(3) .leak-fig { color: var(--Y); }
+.leak:nth-child(4) .leak-fig { color: var(--green); }
+
+/* CMYK accent stripe at top of each card */
+.leak::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.leak:nth-child(1)::before { background: var(--C); }
+.leak:nth-child(2)::before { background: var(--M); }
+.leak:nth-child(3)::before { background: var(--Y); }
+.leak:nth-child(4)::before { background: var(--green); }
+
+.leak-title { font-size: 14px; font-weight: 500; margin-bottom: 0.5rem; }
+.leak-desc { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.65; }
+
+/* Pantone-swatch-style bottom tag */
+.leak-tag {
+  margin-top: 1.5rem; padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+}
+
+/* ============================================================
+   PRODUCT SECTION
+============================================================ */
+.product {
+  background: var(--ink2); padding: 5rem 0;
+  position: relative; overflow: hidden;
+}
+/* Diagonal press-rule background lines */
+.product::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, transparent, transparent 80px,
+    rgba(255,255,255,0.008) 80px, rgba(255,255,255,0.008) 81px);
+}
+.product::after {
+  content: ''; position: absolute; inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0);
+  background-size: 20px 20px; pointer-events: none;
+}
+
+.product .sect-title { color: var(--white); }
+.product .sect-sub { color: var(--gray); }
+
+/* Module tabs */
+.mod-tabs {
+  display: flex; border-bottom: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 0; gap: 0; position: relative; z-index: 2;
+}
+.mtab {
+  padding: 12px 26px; background: none; border: none;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: rgba(255,255,255,0.35);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: all 0.2s;
+}
+.mtab:hover { color: rgba(255,255,255,0.65); }
+.mtab[data-tab="0"].active { color: var(--C); border-bottom-color: var(--C); }
+.mtab[data-tab="1"].active { color: var(--M); border-bottom-color: var(--M); }
+.mtab[data-tab="2"].active { color: var(--Y); border-bottom-color: var(--Y); }
+.mtab[data-tab="3"].active { color: var(--green); border-bottom-color: var(--green); }
+
+/* Module panels */
+.mpanel { display: none; position: relative; z-index: 2; }
+.mpanel.active { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; padding: 3rem 0; align-items: start; }
+
+.mod-name {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  font-size: 54px; text-transform: uppercase; line-height: 1; margin-bottom: 0.75rem;
+}
+.mp0 .mod-name { color: var(--C); }
+.mp1 .mod-name { color: var(--M); }
+.mp2 .mod-name { color: var(--Y); }
+.mp3 .mod-name { color: var(--green); }
+
+.mod-line { font-size: 17px; font-weight: 300; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 1.5rem; }
+
+.mod-feats { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.mod-feats li {
+  display: flex; gap: 10px; font-size: 13px;
+  color: rgba(255,255,255,0.55); line-height: 1.55;
+}
+.mod-feats li .arr { font-weight: 700; flex-shrink: 0; }
+.mp0 .mod-feats li .arr { color: var(--C); }
+.mp1 .mod-feats li .arr { color: var(--M); }
+.mp2 .mod-feats li .arr { color: var(--Y); }
+.mp3 .mod-feats li .arr { color: var(--green); }
+
+.mod-kpi {
+  margin-top: 1.75rem; padding: 1.25rem 1.5rem;
+  background: rgba(255,255,255,0.03);
+  border-left: 3px solid;
+}
+.mp0 .mod-kpi { border-color: var(--C); }
+.mp1 .mod-kpi { border-color: var(--M); }
+.mp2 .mod-kpi { border-color: var(--Y); }
+.mp3 .mod-kpi { border-color: var(--green); }
+
+.mod-kpi-n {
+  font-family: var(--fdisp); font-weight: 900; font-size: 38px; line-height: 1;
+}
+.mp0 .mod-kpi-n { color: var(--C); }
+.mp1 .mod-kpi-n { color: var(--M); }
+.mp2 .mod-kpi-n { color: var(--Y); }
+.mp3 .mod-kpi-n { color: var(--green); }
+.mod-kpi-l { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+
+/* Module visual panel */
+.mod-viz {
+  background: var(--ink3); border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 2px; padding: 1.75rem; min-height: 340px;
+  position: relative; overflow: hidden;
+}
+.mod-viz::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.02) 1px, transparent 0);
+  background-size: 16px 16px;
+}
+.viz-label {
+  font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.25); margin-bottom: 1rem;
+  position: relative; z-index: 1;
+}
+
+/* Mock UI rows inside viz panels */
+.mrow {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 11px; border-radius: 1px; margin-bottom: 5px;
+  background: rgba(255,255,255,0.035); border-left: 2px solid;
+  position: relative; z-index: 1;
+}
+.mrow.c { border-color: var(--C); }
+.mrow.m { border-color: var(--M); }
+.mrow.y { border-color: var(--Y); }
+.mrow.g { border-color: var(--green); }
+.mrow-l { font-size: 11px; color: rgba(255,255,255,0.45); }
+.mrow-v { font-family: var(--fdisp); font-weight: 700; font-size: 14px; }
+.mrow.c .mrow-v { color: var(--C); }
+.mrow.m .mrow-v { color: var(--M); }
+.mrow.y .mrow-v { color: var(--Y); }
+.mrow.g .mrow-v { color: var(--green); }
+
+.viz-total {
+  margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; justify-content: space-between; align-items: baseline;
+  position: relative; z-index: 1;
+}
+.viz-total-l { font-size: 10px; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; }
+.viz-total-v {
+  font-family: var(--fdisp); font-weight: 900; font-size: 30px;
+}
+
+.vbar-wrap { position: relative; z-index: 1; margin-top: 14px; }
+.vbar-head {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: rgba(255,255,255,0.35);
+  letter-spacing: 0.06em; margin-bottom: 5px;
+}
+.vbar-track {
+  height: 4px; background: rgba(255,255,255,0.06);
+  border-radius: 2px; overflow: hidden;
+}
+.vbar-fill { height: 100%; border-radius: 2px; }
+
+/* Proof status badges */
+.proof-badge {
+  font-size: 9px; padding: 2px 8px; border-radius: 1px;
+  font-weight: 500; letter-spacing: 0.06em;
+}
+.badge-pend { background: rgba(255,210,0,0.12); color: var(--Y); }
+.badge-ok   { background: rgba(0,240,154,0.1); color: var(--green); }
+.badge-rev  { background: rgba(255,0,85,0.12); color: var(--M); }
+
+/* ============================================================
+   METRICS STRIP
+============================================================ */
+.metrics {
+  background: var(--M); padding: 3.5rem 0; position: relative; overflow: hidden;
+}
+.metrics::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg, transparent, transparent 120px,
+    rgba(255,255,255,0.03) 120px, rgba(255,255,255,0.03) 121px);
+}
+.metrics-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+  position: relative; z-index: 1;
+}
+.met {
+  text-align: center; position: relative;
+}
+.met:not(:last-child)::after {
+  content: ''; position: absolute; right: 0; top: 15%; height: 70%;
+  width: 1px; background: rgba(255,255,255,0.18);
+}
+.met-n {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  font-size: 54px; color: var(--white); line-height: 1;
+}
+.met-l {
+  font-size: 10px; color: rgba(255,255,255,0.65);
+  letter-spacing: 0.1em; text-transform: uppercase; margin-top: 6px;
+}
+
+/* ============================================================
+   PRICING
+============================================================ */
+.pricing {
+  background: var(--ink); padding: 5rem 0;
+}
+.pricing .sect-title { color: var(--white); }
+.pricing .sect-sub { color: var(--gray); }
+
+.price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+
+.pcard {
+  background: var(--ink3); padding: 2.5rem 2rem;
+  position: relative; overflow: hidden;
+  transition: transform 0.3s;
+}
+.pcard:hover { transform: translateY(-5px); }
+.pcard.feat { background: var(--ink2); border: 1px solid rgba(255,0,85,0.25); }
+
+.pcard::before { content: ''; display: block; height: 3px; margin-bottom: 2rem; }
+.pcard:nth-child(1)::before { background: var(--C); }
+.pcard.feat::before { background: var(--M); }
+.pcard:nth-child(3)::before { background: var(--Y); }
+
+.pcard-badge {
+  display: inline-block; background: var(--M); color: var(--white);
+  font-size: 8px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 3px 10px; border-radius: 1px; margin-bottom: 0.75rem;
+}
+
+.pcard-name {
+  font-family: var(--fdisp); font-weight: 800;
+  font-size: 22px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--white); margin-bottom: 0.75rem;
+}
+.pcard-price {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  font-size: 54px; color: var(--white); line-height: 1;
+}
+.pcard-per { font-size: 11px; color: rgba(255,255,255,0.35); margin-bottom: 4px; }
+.pcard-jobs {
+  font-size: 11px; color: rgba(255,255,255,0.3);
+  padding-bottom: 1.5rem; margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.pcard-feats { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-bottom: 2rem; }
+.pcard-feats li {
+  font-size: 12px; color: rgba(255,255,255,0.5);
+  display: flex; gap: 8px; align-items: flex-start; line-height: 1.5;
+}
+.pcard-feats li::before { content: '✓'; color: var(--green); flex-shrink: 0; font-size: 10px; margin-top: 2px; }
+
+.pcard-cta {
+  display: block; text-align: center; padding: 13px;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 1px;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: rgba(255,255,255,0.6);
+  transition: all 0.2s;
+}
+.pcard.feat .pcard-cta { background: var(--M); border-color: var(--M); color: var(--white); }
+.pcard-cta:hover { border-color: var(--white); color: var(--white); }
+.pcard.feat .pcard-cta:hover { background: #d40048; }
+
+/* ============================================================
+   FOUNDER
+============================================================ */
+.founder {
+  background: var(--ink2); padding: 5.5rem 0; position: relative;
+}
+/* Crop marks on section corners */
+.founder::before {
+  content: ''; position: absolute; top: 24px; left: 24px;
+  width: 28px; height: 28px;
+  border-top: 1px solid rgba(255,255,255,0.14);
+  border-left: 1px solid rgba(255,255,255,0.14);
+}
+.founder::after {
+  content: ''; position: absolute; bottom: 24px; right: 24px;
+  width: 28px; height: 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.14);
+  border-right: 1px solid rgba(255,255,255,0.14);
+}
+
+.founder-inner {
+  display: grid; grid-template-columns: 380px 1fr;
+  gap: 5rem; align-items: start;
+}
+
+/* Photo / Avatar */
+.founder-photo { position: relative; }
+.avatar-box {
+  width: 280px; height: 340px; background: var(--ink3);
+  border: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+/* Conic CMYK background */
+.avatar-box::before {
+  content: ''; position: absolute; inset: 0;
+  background: conic-gradient(var(--C) 0deg 90deg, var(--M) 90deg 180deg, var(--Y) 180deg 270deg, rgba(255,255,255,0.2) 270deg 360deg);
+  opacity: 0.05;
+}
+.avatar-initials {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  font-size: 96px; color: rgba(255,255,255,0.1);
+  letter-spacing: -4px; position: relative; z-index: 1;
+  user-select: none;
+}
+.avatar-nameplate {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--M); padding: 12px 16px;
+}
+.anp-name {
+  font-family: var(--fdisp); font-weight: 800; font-size: 15px;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--white);
+}
+.anp-title { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+
+/* Crop marks on avatar */
+.avatar-crops span {
+  position: absolute; width: 14px; height: 14px;
+}
+.avatar-crops .tl { top: -7px; left: -7px; border-top: 1px solid rgba(255,255,255,0.3); border-left: 1px solid rgba(255,255,255,0.3); }
+.avatar-crops .tr { top: -7px; right: -7px; border-top: 1px solid rgba(255,255,255,0.3); border-right: 1px solid rgba(255,255,255,0.3); }
+.avatar-crops .bl { bottom: -7px; left: -7px; border-bottom: 1px solid rgba(255,255,255,0.3); border-left: 1px solid rgba(255,255,255,0.3); }
+.avatar-crops .br { bottom: -7px; right: -7px; border-bottom: 1px solid rgba(255,255,255,0.3); border-right: 1px solid rgba(255,255,255,0.3); }
+
+/* Founder content */
+.founder-content .sect-title { color: var(--white); }
+.founder-quote {
+  border-left: 3px solid var(--M); padding: 1rem 1.5rem;
+  background: rgba(255,0,85,0.04); margin: 1.5rem 0 2rem;
+}
+.founder-quote p {
+  font-size: 15px; font-style: italic;
+  color: rgba(255,255,255,0.75); line-height: 1.75;
+}
+.founder-bio {
+  font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.85; margin-bottom: 1.2rem;
+}
+.founder-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2rem; }
+.flink {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 1px;
+  padding: 8px 16px; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5); transition: all 0.2s;
+}
+.flink:hover { color: var(--white); border-color: var(--M); }
+
+/* ============================================================
+   CTA BAND
+============================================================ */
+.cta-band {
+  background: var(--ink3); padding: 4rem 0; position: relative; overflow: hidden;
+}
+.cta-band::before {
+  content: ''; position: absolute;
+  top: -40%; left: 40%; width: 70%; height: 200%;
+  background: rgba(255,0,85,0.04); transform: skewX(-8deg); pointer-events: none;
+}
+.cta-inner {
+  display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+  position: relative; z-index: 2;
+}
+.cta-copy .ct {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  font-size: 42px; text-transform: uppercase; color: var(--white);
+  line-height: 1; margin-bottom: 0.5rem;
+}
+.cta-copy .cs { font-size: 14px; color: var(--gray); }
+.cta-actions { display: flex; gap: 12px; flex-shrink: 0; }
+
+/* ============================================================
+   FOOTER
+============================================================ */
+footer { background: var(--ink); }
+.footer-cmyk { display: flex; height: 5px; }
+.footer-cmyk span { flex: 1; }
+.footer-cmyk .fc { background: var(--C); }
+.footer-cmyk .fm { background: var(--M); }
+.footer-cmyk .fy { background: var(--Y); }
+.footer-cmyk .fk { background: rgba(255,255,255,0.25); }
+
+.footer-body {
+  padding: 3.5rem 0 2rem;
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+}
+.footer-brand .fw-logo {
+  font-family: var(--fdisp); font-weight: 900; font-style: italic;
+  font-size: 30px; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--white); margin-bottom: 1rem;
+}
+.footer-brand .fw-logo em { color: var(--M); font-style: normal; }
+.footer-brand p { font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.7; max-width: 240px; }
+
+.footer-col h5 {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 1rem;
+}
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.footer-col ul li a {
+  font-size: 12px; color: rgba(255,255,255,0.45); transition: color 0.2s;
+}
+.footer-col ul li a:hover { color: var(--M); }
+
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.05); padding: 1.5rem 0;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.footer-bottom p { font-size: 11px; color: rgba(255,255,255,0.25); }
+.footer-regs { display: flex; gap: 12px; }
+.footer-regs span { font-size: 18px; color: rgba(255,255,255,0.12); }
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media (max-width: 960px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero-visual { display: none; }
+  .leaks { grid-template-columns: 1fr 1fr; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+  .price-grid { grid-template-columns: 1fr; gap: 10px; }
+  .founder-inner { grid-template-columns: 1fr; }
+  .footer-body { grid-template-columns: 1fr 1fr; }
+  .mpanel.active { grid-template-columns: 1fr; }
+  .cta-inner { flex-direction: column; text-align: center; }
+}
+@media (max-width: 600px) {
+  nav { padding: 0 1rem; }
+  .nav-links { display: none; }
+  .wrap { padding: 0 1.25rem; }
+  .leaks { grid-template-columns: 1fr; }
+  .hero-stats { gap: 1.5rem; }
+  .footer-body { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- CMYK Top Bar -->
+<div class="cmyk-top">
+  <span class="cc"></span><span class="cm"></span>
+  <span class="cy"></span><span class="ck"></span>
+</div>
+
+<!-- ===================== NAVIGATION ===================== -->
+<nav id="navbar">
+  <a href="#home" class="nav-logo">
+    <div class="nav-reg-mark">
+      <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="11" cy="11" r="9" stroke="#FF0055" stroke-width="1.5"/>
+        <line x1="11" y1="1" x2="11" y2="21" stroke="#FF0055" stroke-width="1"/>
+        <line x1="1" y1="11" x2="21" y2="11" stroke="#FF0055" stroke-width="1"/>
+      </svg>
+    </div>
+    <span class="nav-wordmark">Oblique<em>.</em></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#product">Product</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#founder">Founder</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#pricing" class="nav-cta">Request Demo</a>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="home">
+  <div class="wrap">
+    <div class="hero-inner">
+
+      <!-- Left: Copy -->
+      <div class="hero-content">
+        <div class="hero-eyebrow"><span>AI Platform for Print &amp; Packaging</span></div>
+        <h1 class="hero-h1">
+          <span class="l1">Print</span>
+          <span class="l2">Smarter.</span>
+          <span class="l3">Deliver More.</span>
+        </h1>
+        <p class="hero-p">
+          From quote to carbon report — <strong>in one intelligent system.</strong> Oblique is the AI operating layer built exclusively for commercial printers and packaging converters.
+        </p>
+        <div class="hero-btns">
+          <a href="#pricing" class="btn-mag">Start Free Trial →</a>
+          <a href="#product" class="btn-outline">See How It Works</a>
+        </div>
+        <div class="hero-stats">
+          <div>
+            <div class="hst-n">3<sub>min</sub></div>
+            <div class="hst-l">Per quote</div>
+          </div>
+          <div>
+            <div class="hst-n">88<sub>%</sub></div>
+            <div class="hst-l">Cost accuracy</div>
+          </div>
+          <div>
+            <div class="hst-n">₹24<sub>L</sub></div>
+            <div class="hst-l">Avg. saved/yr</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: CMYK Registration Animation -->
+      <div class="hero-visual">
+        <div class="reg-wrap">
+          <div class="rc cyan"></div>
+          <div class="rc mag"></div>
+          <div class="rc yel"></div>
+          <div class="rc key"></div>
+          <div class="reg-outer"></div>
+          <div class="reg-cross"></div>
+          <div class="reg-letters">
+            <span class="rlet C">C</span>
+            <span class="rlet M">M</span>
+            <span class="rlet Y">Y</span>
+            <span class="rlet K">K</span>
+          </div>
+        </div>
+        <!-- Floating metric chips -->
+        <div class="fchip fc1">
+          <div class="fn" style="color:var(--C)">3 min</div>
+          <div class="fl">Quote time</div>
+        </div>
+        <div class="fchip fc2">
+          <div class="fn" style="color:var(--green)">EPR ✓</div>
+          <div class="fl">Compliant</div>
+        </div>
+        <div class="fchip fc3">
+          <div class="fn" style="color:var(--M)">93%</div>
+          <div class="fl">Sheet yield</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MARQUEE ===================== -->
+<div class="marquee-strip">
+  <div class="marquee-track" id="mq">
+    <span>Oblique</span><span class="sep">⊕</span>
+    <span>Estimate</span><span class="sep">⊕</span>
+    <span>Substrate</span><span class="sep">⊕</span>
+    <span>Proof</span><span class="sep">⊕</span>
+    <span>Carbon</span><span class="sep">⊕</span>
+    <span>CMYK</span><span class="sep">⊕</span>
+    <span>Register</span><span class="sep">⊕</span>
+    <span>Impose</span><span class="sep">⊕</span>
+    <span>Bleed</span><span class="sep">⊕</span>
+    <span>Die-cut</span><span class="sep">⊕</span>
+    <span>Laminate</span><span class="sep">⊕</span>
+    <span>Flexo</span><span class="sep">⊕</span>
+    <span>Offset</span><span class="sep">⊕</span>
+    <span>GSM</span><span class="sep">⊕</span>
+    <span>Oblique</span><span class="sep">⊕</span>
+    <span>Estimate</span><span class="sep">⊕</span>
+    <span>Substrate</span><span class="sep">⊕</span>
+    <span>Proof</span><span class="sep">⊕</span>
+    <span>Carbon</span><span class="sep">⊕</span>
+    <span>CMYK</span><span class="sep">⊕</span>
+    <span>Register</span><span class="sep">⊕</span>
+    <span>Impose</span><span class="sep">⊕</span>
+    <span>Bleed</span><span class="sep">⊕</span>
+    <span>Die-cut</span><span class="sep">⊕</span>
+    <span>Laminate</span><span class="sep">⊕</span>
+    <span>Flexo</span><span class="sep">⊕</span>
+    <span>Offset</span><span class="sep">⊕</span>
+    <span>GSM</span><span class="sep">⊕</span>
+  </div>
+</div>
+
+<!-- ===================== PROBLEM ===================== -->
+<div class="diag-down"></div>
+<section class="problem" id="problem">
+  <div class="wrap">
+    <div class="label-line fu"><span>The Problem</span></div>
+    <h2 class="sect-title fu d1">Your Shop Is<br>Bleeding Margin.</h2>
+    <p class="sect-sub fu d2">Most print and packaging operations run on WhatsApp, Excel, and decade-old MIS tools. The result: four invisible profit drains that cost crores every year — silently.</p>
+
+    <div class="leaks fu d3">
+      <div class="leak">
+        <span class="leak-num">01 / Estimation</span>
+        <div class="leak-fig">₹60L</div>
+        <div class="leak-title">Underpriced Jobs</div>
+        <div class="leak-desc">Manual quoting carries an 8–15% error rate. Every underpriced job is produced at a loss. When your estimator retires, so does ₹40–60L/yr in institutional knowledge.</div>
+        <div class="leak-tag">CMYK 100.0.0.0</div>
+      </div>
+      <div class="leak">
+        <span class="leak-num">02 / Materials</span>
+        <div class="leak-fig">₹36L</div>
+        <div class="leak-title">Material Waste</div>
+        <div class="leak-desc">Over-ordering, dead stock, poor imposition. The average shop wastes 12–18% of its ₹2 Cr annual substrate spend. That's a direct hit to gross margin every single month.</div>
+        <div class="leak-tag">CMYK 0.100.0.0</div>
+      </div>
+      <div class="leak">
+        <span class="leak-num">03 / Proof Cycles</span>
+        <div class="leak-fig">12 Days</div>
+        <div class="leak-title">Proof Chaos</div>
+        <div class="leak-desc">Email threads, WhatsApp screenshots, no version control. Average proof cycle: 3–7 rounds over 4–12 days. 22% of jobs have a miscommunication error traceable to proofing.</div>
+        <div class="leak-tag">CMYK 0.0.100.0</div>
+      </div>
+      <div class="leak">
+        <span class="leak-num">04 / Sustainability</span>
+        <div class="leak-fig">₹5 Cr</div>
+        <div class="leak-title">Lost Brand Accounts</div>
+        <div class="leak-desc">FMCG and pharma brands now demand EPR compliance and carbon data from their converters. Shops without it lose contracts. One account can be worth ₹50L–₹5 Cr/yr.</div>
+        <div class="leak-tag">CMYK 0.0.0.100</div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="diag-up"></div>
+
+<!-- ===================== PRODUCT ===================== -->
+<section class="product" id="product">
+  <div class="wrap">
+    <div class="label-line cy fu"><span>The Platform</span></div>
+    <h2 class="sect-title fu d1">One System.<br>Four Precision Tools.</h2>
+    <p class="sect-sub fu d2">Every module is purpose-built for print shop workflows — not adapted from generic SaaS. Together, they form compound intelligence that sharpens with every job processed.</p>
+
+    <!-- Tabs -->
+    <div class="mod-tabs fu d3">
+      <button class="mtab active" data-tab="0">⬡ Estimate</button>
+      <button class="mtab" data-tab="1">⬡ Substrate</button>
+      <button class="mtab" data-tab="2">⬡ Proof</button>
+      <button class="mtab" data-tab="3">⬡ Carbon</button>
+    </div>
+
+    <!-- Panel 0: Estimate -->
+    <div class="mpanel mp0 active" data-panel="0">
+      <div>
+        <div class="mod-name">Estimate</div>
+        <p class="mod-line">AI job quoting that learns from your shop's own cost history — getting sharper with every completed job.</p>
+        <ul class="mod-feats">
+          <li><span class="arr">→</span>Claude API parses free-text briefs into structured specs in seconds — no form filling</li>
+          <li><span class="arr">→</span>Custom ML model trained exclusively on your historical job cost data, not generic averages</li>
+          <li><span class="arr">→</span>Computer vision estimates ink coverage % when artwork is uploaded</li>
+          <li><span class="arr">→</span>Multi-scenario quotes: standard, rush, premium substrate — each with margin %</li>
+          <li><span class="arr">→</span>Self-calibrating: every completed job compares actual vs estimated, improving future accuracy</li>
+        </ul>
+        <div class="mod-kpi">
+          <div class="mod-kpi-n">88–92%</div>
+          <div class="mod-kpi-l">Cost prediction accuracy by day 90 of deployment</div>
+        </div>
+      </div>
+      <div class="mod-viz">
+        <div class="viz-label">Live Quote — Job #2847 · Cosmetic Box 10K units</div>
+        <div class="mrow c"><span class="mrow-l">Substrate (350 GSM SBS, 18 sheets)</span><span class="mrow-v">₹28,400</span></div>
+        <div class="mrow c"><span class="mrow-l">Ink &amp; consumables</span><span class="mrow-v">₹4,200</span></div>
+        <div class="mrow c"><span class="mrow-l">Machine time (Heidelberg, 3.2 hrs)</span><span class="mrow-v">₹9,800</span></div>
+        <div class="mrow c"><span class="mrow-l">Finishing + matte lamination</span><span class="mrow-v">₹6,600</span></div>
+        <div class="mrow c" style="border-left-color:rgba(255,255,255,0.15)"><span class="mrow-l">Wastage &amp; overhead (8%+18%)</span><span class="mrow-v">₹13,433</span></div>
+        <div class="viz-total">
+          <span class="viz-total-l">Suggested Sell Price</span>
+          <span class="viz-total-v" style="color:var(--C)">₹82,000</span>
+        </div>
+        <div class="vbar-wrap">
+          <div class="vbar-head"><span>Gross Margin</span><span style="color:var(--C)">31.3%</span></div>
+          <div class="vbar-track"><div class="vbar-fill" style="width:31%;background:var(--C)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 1: Substrate -->
+    <div class="mpanel mp1" data-panel="1">
+      <div>
+        <div class="mod-name">Substrate</div>
+        <p class="mod-line">Smart materials planning with AI imposition optimisation — recovering 12–18% of wasted substrate spend.</p>
+        <ul class="mod-feats">
+          <li><span class="arr">→</span>Auto-generated Bill of Materials for every accepted job from the Estimate module</li>
+          <li><span class="arr">→</span>Cross-job aggregation identifies bulk discount opportunities across the week's queue</li>
+          <li><span class="arr">→</span>AI imposition optimizer: bin-packing algorithm targets 88–93% sheet utilisation</li>
+          <li><span class="arr">→</span>Shelf-life alerts for substrates and inks with finite usability windows before write-off</li>
+          <li><span class="arr">→</span>Auto-generated Purchase Orders with supplier price comparison and standing rates</li>
+        </ul>
+        <div class="mod-kpi">
+          <div class="mod-kpi-n">₹24L</div>
+          <div class="mod-kpi-l">Average annual material saving on a ₹2 Cr substrate spend</div>
+        </div>
+      </div>
+      <div class="mod-viz">
+        <div class="viz-label">Sheet Utilisation — Week of 28 Oct</div>
+        <div class="vbar-wrap" style="margin-bottom:14px">
+          <div class="vbar-head"><span>Manual imposition</span><span>72%</span></div>
+          <div class="vbar-track"><div class="vbar-fill" style="width:72%;background:rgba(255,255,255,0.2)"></div></div>
+        </div>
+        <div class="vbar-wrap" style="margin-bottom:20px">
+          <div class="vbar-head"><span>Oblique AI optimised</span><span style="color:var(--M)">91%</span></div>
+          <div class="vbar-track"><div class="vbar-fill" style="width:91%;background:var(--M)"></div></div>
+        </div>
+        <div class="mrow m"><span class="mrow-l">Active jobs in queue</span><span class="mrow-v">14 jobs</span></div>
+        <div class="mrow m"><span class="mrow-l">Jobs ganged on shared substrate</span><span class="mrow-v">9 jobs</span></div>
+        <div class="mrow m"><span class="mrow-l">Paper sheets saved this run</span><span class="mrow-v" style="color:var(--green)">18 sheets</span></div>
+        <div class="viz-total">
+          <span class="viz-total-l">Material Cost Saved</span>
+          <span class="viz-total-v" style="color:var(--M)">₹2,840</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: Proof -->
+    <div class="mpanel mp2" data-panel="2">
+      <div>
+        <div class="mod-name">Proof</div>
+        <p class="mod-line">White-labelled digital approval portal. Your brand, your domain — zero email chaos, legally signed approvals.</p>
+        <ul class="mod-feats">
+          <li><span class="arr">→</span>Custom-branded proof portal — clients see your logo and domain, never "Oblique"</li>
+          <li><span class="arr">→</span>Structured annotations: text change / colour change / artwork replacement / approval</li>
+          <li><span class="arr">→</span>Side-by-side version comparison with full timestamped revision history</li>
+          <li><span class="arr">→</span>OTP-based digital signature — legally defensible under IT Act 2000</li>
+          <li><span class="arr">→</span>WhatsApp Business API + email notifications; Adobe CC integration for designers</li>
+        </ul>
+        <div class="mod-kpi">
+          <div class="mod-kpi-n">4 → 48h</div>
+          <div class="mod-kpi-l">Typical 4–12 day proof cycles cut to under 48 hours</div>
+        </div>
+      </div>
+      <div class="mod-viz">
+        <div class="viz-label">Active Proofs — Your Client Portal</div>
+        <div class="mrow y" style="flex-direction:column;align-items:flex-start;gap:6px">
+          <div style="display:flex;width:100%;justify-content:space-between;align-items:center">
+            <span class="mrow-l">Cosmetic Box v3 — Marico Ltd</span>
+            <span class="proof-badge badge-pend">Pending Approval</span>
+          </div>
+          <span style="font-size:10px;color:rgba(255,255,255,0.3)">2 annotations · sent 2h ago</span>
+        </div>
+        <div class="mrow y" style="flex-direction:column;align-items:flex-start;gap:6px">
+          <div style="display:flex;width:100%;justify-content:space-between;align-items:center">
+            <span class="mrow-l">Pharma Label v1 — Sun Pharma</span>
+            <span class="proof-badge badge-ok">Approved ✓</span>
+          </div>
+          <span style="font-size:10px;color:rgba(255,255,255,0.3)">Digitally signed · OTP verified</span>
+        </div>
+        <div class="mrow y" style="flex-direction:column;align-items:flex-start;gap:6px">
+          <div style="display:flex;width:100%;justify-content:space-between;align-items:center">
+            <span class="mrow-l">E-comm Shipper v2 — Flipkart</span>
+            <span class="proof-badge badge-rev">Revision Requested</span>
+          </div>
+          <span style="font-size:10px;color:rgba(255,255,255,0.3)">5 annotations · 2 colour changes</span>
+        </div>
+        <div class="viz-total">
+          <span class="viz-total-l">Avg. Approval Time</span>
+          <span class="viz-total-v" style="color:var(--Y)">31 hrs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3: Carbon -->
+    <div class="mpanel mp3" data-panel="3">
+      <div>
+        <div class="mod-name">Carbon</div>
+        <p class="mod-line">Automated sustainability reporting. From EPR compliance to EU PPWR readiness — without a consultant.</p>
+        <ul class="mod-feats">
+          <li><span class="arr">→</span>Job-level CO₂e: substrate production, ink, machine energy, finishing, logistics</li>
+          <li><span class="arr">→</span>EPR compliance data pre-formatted for CPCB portal reporting in India</li>
+          <li><span class="arr">→</span>EU PPWR readiness: traffic-light recyclability assessment per packaging SKU</li>
+          <li><span class="arr">→</span>Brand client portal — Marico/Unilever/ITC pull their own sustainability reports directly</li>
+          <li><span class="arr">→</span>Every calculation linked to emission factor source (ecoinvent, IPCC AR6) — fully auditable</li>
+        </ul>
+        <div class="mod-kpi">
+          <div class="mod-kpi-n">₹15L</div>
+          <div class="mod-kpi-l">Annual sustainability consulting cost eliminated per shop</div>
+        </div>
+      </div>
+      <div class="mod-viz">
+        <div class="viz-label">Carbon Report — Job #2847 · Cosmetic Box</div>
+        <div class="mrow g"><span class="mrow-l">Substrate production</span><span class="mrow-v">14.2 kg CO₂e</span></div>
+        <div class="mrow g"><span class="mrow-l">Ink manufacturing</span><span class="mrow-v">0.8 kg CO₂e</span></div>
+        <div class="mrow g"><span class="mrow-l">Press energy (MH grid factor)</span><span class="mrow-v">2.1 kg CO₂e</span></div>
+        <div class="mrow g"><span class="mrow-l">Finishing processes</span><span class="mrow-v">1.4 kg CO₂e</span></div>
+        <div class="mrow g"><span class="mrow-l">Outbound logistics</span><span class="mrow-v">1.9 kg CO₂e</span></div>
+        <div class="viz-total">
+          <span class="viz-total-l">Total / Unit</span>
+          <span class="viz-total-v" style="color:var(--green)">2.04g CO₂e</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px;position:relative;z-index:1">
+          <span style="font-size:9px;padding:3px 9px;border-radius:1px;background:rgba(0,240,154,0.1);color:var(--green);letter-spacing:0.06em">EPR Compliant</span>
+          <span style="font-size:9px;padding:3px 9px;border-radius:1px;background:rgba(0,240,154,0.1);color:var(--green);letter-spacing:0.06em">PPWR: Green ✓</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== METRICS ===================== -->
+<div class="metrics" id="metrics">
+  <div class="wrap">
+    <div class="metrics-grid">
+      <div class="met fu">
+        <div class="met-n">88%</div>
+        <div class="met-l">Cost prediction accuracy</div>
+      </div>
+      <div class="met fu d1">
+        <div class="met-n">3 min</div>
+        <div class="met-l">Brief to quote</div>
+      </div>
+      <div class="met fu d2">
+        <div class="met-n">₹24L</div>
+        <div class="met-l">Avg. material savings/yr</div>
+      </div>
+      <div class="met fu d3">
+        <div class="met-n">0</div>
+        <div class="met-l">AI-native competitors</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PRICING ===================== -->
+<section class="pricing" id="pricing">
+  <div class="wrap">
+    <div class="label-line yy fu"><span>Pricing</span></div>
+    <h2 class="sect-title fu d1">Simple.<br>Transparent.<br>Print-Shop Priced.</h2>
+    <p class="sect-sub fu d2">No ₹25L implementation fee. No 6-month onboarding. Start quoting with AI in under 3 weeks — or we refund your setup cost. Guaranteed.</p>
+
+    <div class="price-grid fu d3">
+      <!-- Lite -->
+      <div class="pcard">
+        <div class="pcard-name">Oblique Lite</div>
+        <div class="pcard-price">₹12K</div>
+        <div class="pcard-per">per month (billed annually: ₹1,15,000)</div>
+        <div class="pcard-jobs">Up to 100 jobs/month</div>
+        <ul class="pcard-feats">
+          <li>Oblique Estimate — full AI quoting engine</li>
+          <li>Oblique Proof — up to 3 active client portals</li>
+          <li>Basic BOM &amp; materials tracking</li>
+          <li>Tally integration included</li>
+          <li>5 user seats</li>
+          <li>In-app chat support</li>
+          <li>6-week onboarding programme</li>
+        </ul>
+        <a href="#contact" class="pcard-cta">Get Started</a>
+      </div>
+
+      <!-- Pro (featured) -->
+      <div class="pcard feat">
+        <div class="pcard-badge">Most Popular</div>
+        <div class="pcard-name">Oblique Pro</div>
+        <div class="pcard-price">₹28K</div>
+        <div class="pcard-per">per month (billed annually: ₹2,70,000)</div>
+        <div class="pcard-jobs">101–500 jobs/month</div>
+        <ul class="pcard-feats">
+          <li>All Estimate features + self-calibrating model</li>
+          <li>Full Substrate + AI Imposition Optimizer</li>
+          <li>Oblique Proof — unlimited client portals</li>
+          <li>Carbon add-on: +₹15,000/month</li>
+          <li>Tally + EFI integration included</li>
+          <li>Named Customer Success Manager</li>
+          <li>4-hour SLA support</li>
+          <li>Quarterly Business Reviews</li>
+        </ul>
+        <a href="#contact" class="pcard-cta">Get Started</a>
+      </div>
+
+      <!-- Business -->
+      <div class="pcard">
+        <div class="pcard-name">Oblique Business</div>
+        <div class="pcard-price">₹65K</div>
+        <div class="pcard-per">per month (billed annually: ₹6,24,000)</div>
+        <div class="pcard-jobs">501–2,000 jobs/month</div>
+        <ul class="pcard-feats">
+          <li>Everything in Pro</li>
+          <li>Oblique Carbon — included</li>
+          <li>Brand client sustainability portal</li>
+          <li>Multi-plant support</li>
+          <li>Adobe Creative Cloud integration</li>
+          <li>WhatsApp Business API integration</li>
+          <li>Dedicated onboarding specialist</li>
+          <li>Priority SLA + custom integrations</li>
+        </ul>
+        <a href="#contact" class="pcard-cta">Get Started</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOUNDER ===================== -->
+<section class="founder" id="founder">
+  <div class="wrap">
+    <div class="founder-inner">
+
+      <!-- Photo Column -->
+      <div class="founder-photo fu">
+        <div class="avatar-box">
+          <span class="avatar-initials">HS</span>
+          <div class="avatar-crops">
+            <span class="tl"></span>
+            <span class="tr"></span>
+            <span class="bl"></span>
+            <span class="br"></span>
+          </div>
+          <div class="avatar-nameplate">
+            <div class="anp-name">Harshit Sharma</div>
+            <div class="anp-title">Founder &amp; CEO, Oblique</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Column -->
+      <div class="founder-content fu d1">
+        <div class="label-line yy"><span>The Founder</span></div>
+        <h2 class="sect-title">Built By Someone<br>Who Knows<br>Your Floor.</h2>
+
+        <div class="founder-quote">
+          <p>"I've watched print shops with decades of craft lose brand contracts because they couldn't generate a sustainability PDF. That's not a skills problem — that's a tools problem. Oblique is the tool they should have had ten years ago."</p>
+        </div>
+
+        <p class="founder-bio">
+          Harshit Sharma grew up with a first-hand understanding of what really happens behind a print job ticket — the substrate calculations done in a ledger, the last-minute proof change arriving at 11 PM via WhatsApp, the estimator who carries three years of margin knowledge entirely in memory. That proximity to the operational reality of Indian print shops became the founding insight for Oblique.
+        </p>
+        <p class="founder-bio">
+          Before founding Oblique, Harshit identified a structural gap that no software company had seriously addressed: Indian print and packaging businesses collectively handle hundreds of crores in substrate spend and supply some of the world's largest FMCG and pharma brands — yet the software layer governing their daily operations had not meaningfully evolved in over a decade. Legacy MIS tools were priced for large enterprise, built for Western markets, and designed before AI existed as a commercial reality.
+        </p>
+        <p class="founder-bio">
+          Oblique is the convergence of that industry intimacy with modern AI engineering — purpose-built for the 2.5 lakh printing and packaging establishments across India, with the ambition to become the global operating standard for the industry over the next decade.
+        </p>
+
+        <div class="founder-links">
+          <a href="mailto:harshit@oblique.in" class="flink">✉ harshit@oblique.in</a>
+          <a href="#" class="flink">LinkedIn →</a>
+          <a href="#" class="flink">X / Twitter →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CTA BAND ===================== -->
+<div class="cta-band" id="contact">
+  <div class="wrap">
+    <div class="cta-inner">
+      <div class="cta-copy">
+        <div class="ct">Ready to Stop<br>Leaving Margin Behind?</div>
+        <div class="cs">First live quote from your shop's AI model in under 3 weeks.</div>
+      </div>
+      <div class="cta-actions">
+        <a href="mailto:harshit@oblique.in" class="btn-mag">Book a Demo →</a>
+        <a href="#pricing" class="btn-outline">See Pricing</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="footer-cmyk">
+    <span class="fc"></span>
+    <span class="fm"></span>
+    <span class="fy"></span>
+    <span class="fk"></span>
+  </div>
+  <div class="wrap">
+    <div class="footer-body">
+      <div class="footer-brand">
+        <div class="fw-logo">Oblique<em>.</em></div>
+        <p>The AI operating system for print &amp; packaging. India-first. Built for the world.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="#">Oblique Estimate</a></li>
+          <li><a href="#">Oblique Substrate</a></li>
+          <li><a href="#">Oblique Proof</a></li>
+          <li><a href="#">Oblique Carbon</a></li>
+          <li><a href="#">Integrations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Founder</a></li>
+          <li><a href="#">Blog</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Press</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="#">Mumbai, India</a></li>
+          <li><a href="mailto:hello@oblique.in">hello@oblique.in</a></li>
+          <li><a href="#">Request Demo</a></li>
+          <li><a href="#">Support</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Oblique Technologies Pvt. Ltd. · All rights reserved.</p>
+      <div class="footer-regs">
+        <span>⊕</span><span>⊕</span><span>⊕</span><span>⊕</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+   JAVASCRIPT
+============================================================ -->
+<script>
+/* === MODULE TABS === */
+const tabs = document.querySelectorAll('.mtab');
+const panels = document.querySelectorAll('.mpanel');
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const idx = tab.dataset.tab;
+    tabs.forEach(t => t.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector(`[data-panel="${idx}"]`).classList.add('active');
+  });
+});
+
+/* === SCROLL FADE-UP ANIMATION === */
+const fus = document.querySelectorAll('.fu');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('in');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+
+fus.forEach(el => {
+  const rect = el.getBoundingClientRect();
+  if (rect.top < window.innerHeight * 0.95) {
+    el.classList.add('in');
+  } else {
+    io.observe(el);
+  }
+});
+
+/* === SMOOTH SCROLL === */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      const offset = 68;
+      const top = target.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  });
+});
+
+/* === NAV SCROLL STYLE === */
+window.addEventListener('scroll', () => {
+  const nb = document.getElementById('navbar');
+  if (window.scrollY > 40) {
+    nb.style.background = 'rgba(9,8,12,0.97)';
+  } else {
+    nb.style.background = 'rgba(9,8,12,0.88)';
+  }
+});
+
+/* === ACTIVE NAV LINK HIGHLIGHT === */
+const sections = document.querySelectorAll('section[id], div[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+const sio = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      navLinks.forEach(l => {
+        l.style.color = l.getAttribute('href') === '#' + id ? '#FF0055' : '';
+      });
+    }
+  });
+}, { threshold: 0.4 });
+sections.forEach(s => sio.observe(s));
+
+/* === VBAR FILL ANIMATION ON VIEW === */
+const vbars = document.querySelectorAll('.vbar-fill');
+const barsIO = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const w = e.target.style.width;
+      e.target.style.width = '0';
+      requestAnimationFrame(() => {
+        e.target.style.transition = 'width 1.2s ease-out';
+        e.target.style.width = w;
+      });
+      barsIO.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+vbars.forEach(b => barsIO.observe(b));
+</script>
+</body>
+</html>
